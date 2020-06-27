@@ -1,4 +1,5 @@
 import json
+from botocore.vendored import requests
 
 BLACK_COLOUR_HEX = '#000000'
 WHITE_COLOUR_HEX = '#ffffff'
@@ -10,8 +11,7 @@ def lambda_handler(event, context):
     respondtoslack("1",payload["response_url"])
 
     return {
-        'statusCode': 200,
-        'body': json.dumps(payload["response_url"])
+        'statusCode': 200
     }
 
 def convertBodytoJSON(body):
@@ -26,9 +26,9 @@ def convertBodytoJSON(body):
 
 
 def respondtoslack(data,url):
-    import requests
 
     payload = {
+        "response_type": "in_channel",
         "text": "I hope the tour went well, Mr. Wonka."
     }
 
@@ -36,7 +36,7 @@ def respondtoslack(data,url):
         'Content-Type': "application/json",
     }
 
-    response = requests.request("GET", url, data=json.dumps(payload), headers=headers)
+    response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
 
     print(response.text)
 
@@ -77,4 +77,3 @@ def x(row, index):
 
 def y(row, index):
     return row['q']['y'][0]
-
