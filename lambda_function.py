@@ -10,9 +10,10 @@ def lambda_handler(event, context):
     payload = convertBodytoJSON(event["body"])
     response_url = getURL(payload,"response_url")
     respondtoslack("1",response_url)
-
+    respondtoslack("2",response_url)
     return {
-        'statusCode': 200
+        'statusCode': 200,
+        'body' : "Loading"
     }
 
 def convertBodytoJSON(body):
@@ -30,7 +31,7 @@ def respondtoslack(data,url):
 
     payload = {
         "response_type": "in_channel",
-        "text": "I hope the tour went well, Mr. Wonka."
+        "text": data
     }
 
     headers = {
