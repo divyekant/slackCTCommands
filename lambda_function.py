@@ -5,10 +5,25 @@ WHITE_COLOUR_HEX = '#ffffff'
 
 def lambda_handler(event, context):
 
+    payload = convertBodytoJSON(event["body"])
+
+    respondtoslack("1",payload["response_url"])
+
     return {
         'statusCode': 200,
-        'body' : json.dumps(event)
+        'body': json.dumps(payload["response_url"])
     }
+
+def convertBodytoJSON(body):
+    data = {}
+    tokens = body.split("&")
+
+    for token in tokens:
+        kv = token.split("=")
+        data[kv[0]] = kv[1]
+
+    return data
+
 
 def respondtoslack(data,url):
     import requests
@@ -63,3 +78,4 @@ def x(row, index):
 
 def y(row, index):
     return row['q']['y'][0]
+
