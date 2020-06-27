@@ -16,12 +16,12 @@ def lambda_handler(event, context):
     command = readCommand(getCommand(payload))
 
     CTData = trendsAPI.runTrendsAPI(command)
-    line_data = convertCTDatatoLineData(CTData)
-    axis = {
-        "x" : "Time Range",
-        "y" : "Count"
-    }
-    print getimageurlfromdata(line_data, "Line",axis)
+    # line_data = convertCTDatatoLineData(CTData)
+    # axis = {
+    #     "x" : "Time Range",
+    #     "y" : "Count"
+    # }
+    # print getimageurlfromdata(line_data, "Line",axis)
 
     respondtoslack(json.dumps(CTData), response_url)
 
