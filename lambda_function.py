@@ -29,7 +29,7 @@ def lambda_handler(event, context):
 
 def getCommand(data):
     t = urllib.unquote(data["text"]).replace("+"," ")
-    return data["text"]
+    return t
 
 
 def readCommand(text):
