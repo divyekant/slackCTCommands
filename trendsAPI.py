@@ -8,8 +8,8 @@ def queryCall(eventName,accid,accpc,dfrom,dto,trendType,uniqueFlag):
 
     payload = "{\"event_name\":\"%s\",\"from\":%s,\"to\":%s,\"unique\":%s,\"groups\":{\"foo\":{\"trend_type\":\"%s\"}}}" % (eventName,dfrom,dto,uniqueFlag.lower(),trendType.lower())
     headers = {
-        'X-CleverTap-Account-Id': "%s" % accid,
-        'X-CleverTap-Passcode': "%s" % accpc,
+        'X-CleverTap-Account-Id': accid,
+        'X-CleverTap-Passcode': accpc,
         'Content-Type': "application/json",
         'cache-control': "no-cache",
         'Postman-Token': "687db015-6665-4a5b-9706-69f78b7a03e5"
@@ -36,8 +36,8 @@ def partialCall(reqid,accid,accpc):
 
     payload = ""
     headers = {
-        'X-CleverTap-Account-Id':  "%s" % accid,
-        'X-CleverTap-Passcode': "%s" % accpc,
+        'X-CleverTap-Account-Id':  accid,
+        'X-CleverTap-Passcode': accpc,
         'Content-Type': "application/json",
         'cache-control': "no-cache",
         'Postman-Token': "21b84377-9fc4-4709-9836-65f13452160d"
@@ -71,7 +71,6 @@ def runTrendsAPI(command):
     else:
         uniqueFlag = "True"
 
-    ftFlag = True
     print "Doing for Event: " + eventName
 
     #  get req id
@@ -115,24 +114,24 @@ def getEventName(data):
 
 
 def getFromDate(data):
-    return data["fDate"]
+    return data["fDate"].strip(" ")
 
 
 def getToDate(data):
-    return data["tDate"]
+    return data["tDate"].strip(" ")
 
 
 def getAccountID(data):
-    return data["accid"]
+    return data["accid"].strip(" ")
 
 
 def getAccountPasscode(data):
-    return data["accpcode"]
+    return data["accpcode"].strip(" ")
 
 
 def getTrendType(data):
-    return data["tType"]
+    return data["tType"].strip(" ")
 
 
 def getUniqueFlag(data):
-    return data["uFlag"]
+    return data["uFlag"].strip(" ")

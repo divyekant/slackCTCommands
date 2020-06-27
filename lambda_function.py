@@ -17,10 +17,13 @@ def lambda_handler(event, context):
 
     CTData = trendsAPI.runTrendsAPI(command)
     line_data = convertCTDatatoLineData(CTData)
+    axis = {
+        "x" : "Time Range",
+        "y" : "Count"
+    }
+    print getimageurlfromdata(line_data, "Line",axis)
 
-    print getimageurlfromdata(line_data, "Line")
-
-    respondtoslack("Data Fetched!", response_url)
+    respondtoslack(json.dumps(CTData), response_url)
 
     return {
         'statusCode': 200
@@ -49,8 +52,10 @@ def convertCTDatatoLineData(CTData):
     line_data = []
     for key in CTData:
         row = {}
-        row["x"] = key
-        row["q"]["y"] = CTData[key]
+        row["x"] = int(key)
+        row["q"] = {}
+        row["q"]["y"] = []
+        row["q"]["y"].append(int(CTData[key]))
         line_data.append(row)
 
     return line_data
