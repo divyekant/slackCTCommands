@@ -29,8 +29,7 @@ def respondtoslack(data,url):
     import requests
 
     payload = {
-        "channel": "Tester",
-        "text": "<!channel> I hope the tour went well, Mr. Wonka."
+        "text": "I hope the tour went well, Mr. Wonka."
     }
 
     headers = {
