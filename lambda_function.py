@@ -13,8 +13,12 @@ def lambda_handler(event, context):
 
     payload = convertBodytoJSON(event["body"])
     response_url = getURL(payload,"response_url")
-    threading.Thread(target=respondtoslack("1",response_url)).start()
-    threading.Thread(target=respondtoslack("2",response_url)).start()
+    thread1 = threading.Thread(target=respondtoslack("1",response_url))
+    thread1.start()
+    thread1.join()
+    thread2 = threading.Thread(target=respondtoslack("2",response_url)).start()
+    thread2.start()
+    thread2.join()
 
     return {
         'statusCode': 200,
