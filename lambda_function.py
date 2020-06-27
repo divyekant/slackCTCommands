@@ -1,5 +1,6 @@
 import json
 from botocore.vendored import requests
+import urllib
 
 BLACK_COLOUR_HEX = '#000000'
 WHITE_COLOUR_HEX = '#ffffff'
@@ -7,8 +8,8 @@ WHITE_COLOUR_HEX = '#ffffff'
 def lambda_handler(event, context):
 
     payload = convertBodytoJSON(event["body"])
-
-    respondtoslack("1",payload["response_url"])
+    response_url = getURL(payload,"response_url")
+    respondtoslack("1",response_url)
 
     return {
         'statusCode': 200
@@ -77,3 +78,6 @@ def x(row, index):
 
 def y(row, index):
     return row['q']['y'][0]
+
+def getURL(payload,key):
+    return urllib.unquote(payload["response_url"])
