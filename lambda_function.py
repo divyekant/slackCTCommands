@@ -7,7 +7,7 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body' : json.dumps(event["response_url"])
+        'body' : json.dumps(event)
     }
 
 def respondtoslack(data,url):
