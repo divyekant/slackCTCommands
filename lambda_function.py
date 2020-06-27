@@ -1,6 +1,10 @@
 import json
+import time
+
 from botocore.vendored import requests
 import urllib
+import threading
+
 
 BLACK_COLOUR_HEX = '#000000'
 WHITE_COLOUR_HEX = '#ffffff'
@@ -9,8 +13,9 @@ def lambda_handler(event, context):
 
     payload = convertBodytoJSON(event["body"])
     response_url = getURL(payload,"response_url")
-    respondtoslack("1",response_url)
-    respondtoslack("2",response_url)
+    threading.Thread(target=respondtoslack("1",response_url)).start()
+    threading.Thread(target=respondtoslack("2",response_url)).start()
+
     return {
         'statusCode': 200,
         'body' : "Loading"
@@ -37,7 +42,7 @@ def respondtoslack(data,url):
     headers = {
         'Content-Type': "application/json",
     }
-
+    time.sleep(1)
     response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
 
     print(response.text)
