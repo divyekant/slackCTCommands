@@ -1,7 +1,12 @@
 import json
+import time
+
 import trendsAPI
 from botocore.vendored import requests
 import urllib
+import requests
+import createChart
+import screenshot
 
 BLACK_COLOUR_HEX = '#000000'
 WHITE_COLOUR_HEX = '#ffffff'
@@ -16,12 +21,6 @@ def lambda_handler(event, context):
     command = readCommand(getCommand(payload))
 
     CTData = trendsAPI.runTrendsAPI(command)
-    # line_data = convertCTDatatoLineData(CTData)
-    # axis = {
-    #     "x" : "Time Range",
-    #     "y" : "Count"
-    # }
-    # print getimageurlfromdata(line_data, "Line",axis)
 
     respondtoslack(json.dumps(CTData), response_url)
 
@@ -47,20 +46,6 @@ def readCommand(text):
     command["uFlag"] = tokens[6]
     return command
 
-
-def convertCTDatatoLineData(CTData):
-    line_data = []
-    for key in CTData:
-        row = {}
-        row["x"] = int(key)
-        row["q"] = {}
-        row["q"]["y"] = []
-        row["q"]["y"].append(int(CTData[key]))
-        line_data.append(row)
-
-    return line_data
-
-
 def convertBodytoJSON(body):
     data = {}
     tokens = body.split("&")
@@ -72,7 +57,7 @@ def convertBodytoJSON(body):
     return data
 
 
-def respondtoslack(data, url):
+def respondtoslackwithChart(data, url):
     payload = {
         "replace_original": True,
         "response_type": "in_channel",
@@ -84,44 +69,40 @@ def respondtoslack(data, url):
     response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
 
 
-def getimageurlfromdata(data, type, axis):
-    import leather
-    import os
-    import time
-
-    dir = os.path.abspath(os.getcwd())
-    fileName = "charts" + str(int(time.time())) + ".svg"
-    filePath = dir + "/" + fileName
-    leather.theme.default_series_colors = ['#196cf8']
-    leather.theme.background_color = WHITE_COLOUR_HEX
-    leather.theme.title_color = WHITE_COLOUR_HEX
-    leather.theme.axis_title_color = BLACK_COLOUR_HEX
-    leather.theme.tick_color = BLACK_COLOUR_HEX
-    leather.theme.label_color = BLACK_COLOUR_HEX
-
-    if type == "Line":
-        chart = leather.Chart('Line')
-        chart.add_line(data, x=x, y=y)
-        chart.add_x_axis(None, None, axis["x"])
-        chart.add_y_axis(None, None, axis["y"])
-        chart.to_svg(fileName)
-    elif type == "Histogram":
-        chart = leather.Chart('Columns')
-        chart.add_columns(data)
-        chart.add_x_axis(None, None, axis["x"])
-        chart.add_y_axis(None, None, axis["y"])
-        chart.to_svg(fileName)
-
-    return filePath
+def getQuickChartURL(data):
+    return "https://quickchart.io/chart?bkg=white&c=%7B%0A%20%20type%3A%20%27bar%27%2C%0A%20%20data%3A%20%7B%0A%20%20%20%20labels%3A%20%5B%27Week%201%27%2C%20%27Week%202%27%2C%20%27Week%203%27%2C%20%27Week%204%27%5D%2C%0A%20%20%20%20datasets%3A%20%5B%7B%0A%20%20%20%20%20%20label%3A%20%27Retweets%27%2C%0A%20%20%20%20%20%20data%3A%20%5B12%2C%205%2C%2040%2C%205%5D%0A%20%20%20%20%7D%2C%20%7B%0A%20%20%20%20%20%20label%3A%20%27Likes%27%2C%0A%20%20%20%20%20%20data%3A%20%5B80%2C%2042%2C%20215%2C%2030%5D%0A%20%20%20%20%7D%5D%0A%20%20%7D%0A%7D"
 
 
-def x(row, index):
-    return row['x']
+def respondtoslack(data, url):
+    payload = {
+        "replace_original": True,
+        "response_type": "in_channel",
+        "blocks": [
+            {
+                "type": "image",
+                "title": {
+                    "type": "plain_text",
+                    "text": "Latest data"
+                },
+                "block_id": "quickchart-image",
+                "image_url": getQuickChartURL(data),
+                "alt_text": "Chart showing latest data"
+            }
+        ]
+    }
 
+    headers = {
+            'Content-Type': "application/json",
+        }
+    response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
 
-def y(row, index):
-    return row['q']['y'][0]
+def getURL(payload,key):
+    return urllib.unquote(payload[key])
 
+def getfileName():
+    return "page" + str(int(time.time()))
 
-def getURL(payload, key):
-    return urllib.unquote(payload["response_url"])
+def formatLineData(CTData):
+    line_data = []
+    for key in CTData:
+        line_data.append(CTData[key])
