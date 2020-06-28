@@ -4,9 +4,6 @@ import time
 import trendsAPI
 from botocore.vendored import requests
 import urllib
-import requests
-import createChart
-import screenshot
 
 BLACK_COLOUR_HEX = '#000000'
 WHITE_COLOUR_HEX = '#ffffff'
@@ -22,7 +19,7 @@ def lambda_handler(event, context):
 
     CTData = trendsAPI.runTrendsAPI(command)
 
-    respondtoslack(json.dumps(CTData), response_url)
+    respondtoslackwithChart(json.dumps(CTData), response_url)
 
     return {
         'statusCode': 200

@@ -1,6 +1,5 @@
 from botocore.vendored import requests
 import time
-import requests
 
 def queryCall(eventName,accid,accpc,dfrom,dto,trendType,uniqueFlag):
 
