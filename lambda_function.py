@@ -18,8 +18,9 @@ def lambda_handler(event, context):
     command = readCommand(getCommand(payload))
 
     CTData = trendsAPI.runTrendsAPI(command)
+    chart = generateLineChart(CTData)
 
-    respondtoslackwithChart(json.dumps(CTData), response_url)
+    respondtoslackwithChart(chart, response_url)
 
     return {
         'statusCode': 200
@@ -54,7 +55,7 @@ def convertBodytoJSON(body):
     return data
 
 
-def respondtoslackwithChart(data, url):
+def respondtoslack(data, url):
     payload = {
         "replace_original": True,
         "response_type": "in_channel",
@@ -65,12 +66,32 @@ def respondtoslackwithChart(data, url):
     }
     response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
 
+def generateLineChart(data):
 
-def getQuickChartURL(data):
-    return "https://quickchart.io/chart?bkg=white&c=%7B%0A%20%20type%3A%20%27bar%27%2C%0A%20%20data%3A%20%7B%0A%20%20%20%20labels%3A%20%5B%27Week%201%27%2C%20%27Week%202%27%2C%20%27Week%203%27%2C%20%27Week%204%27%5D%2C%0A%20%20%20%20datasets%3A%20%5B%7B%0A%20%20%20%20%20%20label%3A%20%27Retweets%27%2C%0A%20%20%20%20%20%20data%3A%20%5B12%2C%205%2C%2040%2C%205%5D%0A%20%20%20%20%7D%2C%20%7B%0A%20%20%20%20%20%20label%3A%20%27Likes%27%2C%0A%20%20%20%20%20%20data%3A%20%5B80%2C%2042%2C%20215%2C%2030%5D%0A%20%20%20%20%7D%5D%0A%20%20%7D%0A%7D"
+    line_data = []
+    value_data = []
+    for key in data:
+        line_data.append(key)
+        value_data.append(data[key])
+
+    chart = {
+        "type": 'line',
+        "data": {
+            "labels": line_data,
+            "datasets": [{
+                "label": 'My Second dataset',
+                "data":value_data
+            }]
+
+        }
+    }
+    return chart
+
+def getQuickChartURL(chart):
+    return "https://quickchart.io/chart?bkg=white&c=" + urllib.quote(json.dumps(chart))
 
 
-def respondtoslack(data, url):
+def respondtoslackwithChart(chart, url):
     payload = {
         "replace_original": True,
         "response_type": "in_channel",
@@ -82,15 +103,15 @@ def respondtoslack(data, url):
                     "text": "Latest data"
                 },
                 "block_id": "quickchart-image",
-                "image_url": getQuickChartURL(data),
+                "image_url": getQuickChartURL(chart),
                 "alt_text": "Chart showing latest data"
             }
         ]
     }
 
     headers = {
-            'Content-Type': "application/json",
-        }
+        'Content-Type': "application/json",
+    }
     response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
 
 def getURL(payload,key):
@@ -98,8 +119,3 @@ def getURL(payload,key):
 
 def getfileName():
     return "page" + str(int(time.time()))
-
-def formatLineData(CTData):
-    line_data = []
-    for key in CTData:
-        line_data.append(CTData[key])
