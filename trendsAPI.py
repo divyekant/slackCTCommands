@@ -1,11 +1,13 @@
-from botocore.vendored import requests
+import requests
 import time
+import Constants
 
-def queryCall(eventName,accid,accpc,dfrom,dto,trendType,uniqueFlag):
 
+def queryCall(eventName, accid, accpc, dfrom, dto, trendType, uniqueFlag):
     url = "https://api.clevertap.com/1/counts/trends.json"
 
-    payload = "{\"event_name\":\"%s\",\"from\":%s,\"to\":%s,\"unique\":%s,\"groups\":{\"foo\":{\"trend_type\":\"%s\"}}}" % (eventName,dfrom,dto,uniqueFlag.lower(),trendType.lower())
+    payload = "{\"event_name\":\"%s\",\"from\":%s,\"to\":%s,\"unique\":%s,\"groups\":{\"foo\":{\"trend_type\":\"%s\"}}}" % (
+    eventName, dfrom, dto, uniqueFlag.lower(), trendType.lower())
     headers = {
         'X-CleverTap-Account-Id': accid,
         'X-CleverTap-Passcode': accpc,
@@ -28,14 +30,15 @@ def queryCall(eventName,accid,accpc,dfrom,dto,trendType,uniqueFlag):
         else:
             return 0
 
-def partialCall(reqid,accid,accpc):
+
+def partialCall(reqid, accid, accpc):
     url = "https://api.clevertap.com/1/counts/trends.json"
 
     querystring = {"req_id": "%s" % reqid}
 
     payload = ""
     headers = {
-        'X-CleverTap-Account-Id':  accid,
+        'X-CleverTap-Account-Id': accid,
         'X-CleverTap-Passcode': accpc,
         'Content-Type': "application/json",
         'cache-control': "no-cache",
@@ -46,24 +49,23 @@ def partialCall(reqid,accid,accpc):
 
     response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
 
-
     if response.status_code != 200:
         return 0
     else:
         res = response.json()
-        if res["status"]=="partial":
+        if res["status"] == "partial":
             return 0
         return res
 
-def runTrendsAPI(command):
-    eventName = getEventName(command)
-    uniqueFlag = getUniqueFlag(command)
-    accid = getAccountID(command)
-    accpcode = getAccountPasscode(command)
-    dfrom = getFromDate(command)
-    dto = getToDate(command)
-    trendType = getTrendType(command)
 
+def fetchData(CTAPIObject):
+    eventName = getEventName(CTAPIObject)
+    uniqueFlag = getUniqueFlag()
+    accid = getAccountID(CTAPIObject)
+    accpcode = getAccountPasscode(CTAPIObject)
+    dfrom = getFromDate(CTAPIObject)
+    dto = getToDate(CTAPIObject)
+    trendType = getTrendType()
 
     if uniqueFlag == "E":
         uniqueFlag = "False"
@@ -73,19 +75,17 @@ def runTrendsAPI(command):
     print "Doing for Event: " + eventName
 
     #  get req id
-    reqID = queryCall(eventName,accid,accpcode,dfrom,dto,trendType,uniqueFlag)
+    reqID = queryCall(eventName, accid, accpcode, dfrom, dto, trendType, uniqueFlag)
 
     while reqID == 0:
         time.sleep(5)
-        reqID = queryCall(eventName, accid, accpcode,dfrom,dto,trendType,uniqueFlag)
-
+        reqID = queryCall(eventName, accid, accpcode, dfrom, dto, trendType, uniqueFlag)
 
     retryFlag = True
     retryCount = 0
 
-
-    while retryFlag and retryCount <=10:
-        res = partialCall(reqID,accid,accpcode)
+    while retryFlag and retryCount <= 10:
+        res = partialCall(reqID, accid, accpcode)
         if res == 0:
             retryFlag = True
             time.sleep(5)
@@ -93,8 +93,7 @@ def runTrendsAPI(command):
         else:
             retryFlag = False
 
-
-    if retryCount <=10:
+    if retryCount <= 10:
         if res["status"] == "success":
             data = res["foo"]
         else:
@@ -107,30 +106,29 @@ def runTrendsAPI(command):
     return data
 
 
-
 def getEventName(data):
-    return data["eName"]
+    return data[Constants.event_name]
 
 
 def getFromDate(data):
-    return data["fDate"].strip(" ")
+    return data[Constants.from_date]
 
 
 def getToDate(data):
-    return data["tDate"].strip(" ")
+    return data[Constants.to_date]
 
 
 def getAccountID(data):
-    return data["accid"].strip(" ")
+    return data[Constants.account_id]
 
 
 def getAccountPasscode(data):
-    return data["accpcode"].strip(" ")
+    return data[Constants.account_passcode]
 
 
-def getTrendType(data):
-    return data["tType"].strip(" ")
+def getTrendType():
+    return "daily"
 
 
-def getUniqueFlag(data):
-    return data["uFlag"].strip(" ")
+def getUniqueFlag():
+    return "E"
