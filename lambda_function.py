@@ -24,7 +24,7 @@ def lambda_handler(event, context):
 
     CTData = trendsAPI.fetchData(CTAPIObject)
 
-    chart = chartGenerater.generateChart(CTData,commandObject[Constants.command_type])
+    chart = chartGenerater.generateChart(CTData, commandObject[Constants.command_type])
 
     slackAlert.messagewithChart(chart, response_url)
 
